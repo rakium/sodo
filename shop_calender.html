@@ -2,100 +2,161 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>営業日カレンダー - 素土</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: '游明朝', 'Yu Mincho', 'Hiragino Mincho ProN', 'MS Mincho', serif;
             background: #ffffff;
-            padding: 40px;
             color: #333;
             font-weight: 300;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                padding-top: 120px;
+            }
+        }
+
+        .action-button {
+            position: fixed;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            touch-action: manipulation;
+            transition: transform 0.3s ease;
         }
 
         .settings-button {
-            position: fixed;
-            top: 30px;
-            right: 30px;
+            top: 20px;
+            right: 20px;
             background: #1976d2;
             color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .instagram-button {
-            position: fixed;
-            top: 30px;
-            right: 90px;
+            top: 20px;
+            right: 80px;
             background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
             color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .instagram-button:hover {
-            transform: scale(1.1);
-            transition: transform 0.3s ease;
+        @media (max-width: 768px) {
+            .action-button {
+                width: 44px;
+                height: 44px;
+                font-size: 1.1rem;
+            }
+            
+            .settings-button {
+                top: 15px;
+                right: 15px;
+            }
+            
+            .instagram-button {
+                top: 15px;
+                right: 65px;
+            }
         }
 
-        .settings-modal, .instagram-modal {
+        @media (hover: hover) {
+            .action-button:hover {
+                transform: scale(1.1);
+            }
+        }
+
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1001;
+            padding: 20px;
+            transition: background 0.3s ease;
         }
 
-        .settings-content, .instagram-content {
+        .modal.active {
+            display: flex;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
             background: white;
-            padding: 40px;
+            padding: 30px;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 550px;
+            width: 100%;
+            max-width: 550px;
             max-height: 90vh;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .modal {
+                padding: 10px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                max-height: 85vh;
+            }
         }
 
         .instagram-content {
-            width: 500px;
+            max-width: 500px;
         }
 
-        .settings-title, .instagram-title {
+        .modal-title {
             font-size: 1.5rem;
             font-weight: 600;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             text-align: center;
             color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .modal-title {
+                font-size: 1.25rem;
+                margin-bottom: 20px;
+            }
         }
 
         .instagram-title {
@@ -117,13 +178,41 @@
             font-family: '游明朝', 'Yu Mincho', 'Hiragino Mincho ProN', 'MS Mincho', serif;
         }
 
-        .form-select, .form-input {
+        @media (max-width: 768px) {
+            .form-label {
+                font-size: 0.9rem;
+            }
+        }
+
+        .form-control {
             width: 100%;
             padding: 12px;
             border: 2px solid #dee2e6;
             border-radius: 8px;
             font-size: 1rem;
             font-family: '游明朝', 'Yu Mincho', 'Hiragino Mincho ProN', 'MS Mincho', serif;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-select {
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-control {
+                padding: 10px;
+                font-size: 16px;
+            }
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #1976d2;
         }
 
         .marker-settings {
@@ -131,6 +220,12 @@
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .marker-settings {
+                padding: 15px;
+            }
         }
 
         .marker-settings-header {
@@ -143,6 +238,12 @@
             font-size: 0.85rem;
             color: #6c757d;
             text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .marker-settings-title {
+                font-size: 0.75rem;
+            }
         }
 
         .marker-item {
@@ -166,6 +267,7 @@
             border-radius: 50%;
             border: 2px solid #fff;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
         }
 
         .marker-label-input {
@@ -175,6 +277,13 @@
             border-radius: 4px;
             font-size: 0.9rem;
             font-family: '游明朝', 'Yu Mincho', 'Hiragino Mincho ProN', 'MS Mincho', serif;
+            min-width: 0;
+        }
+
+        @media (max-width: 768px) {
+            .marker-label-input {
+                font-size: 16px;
+            }
         }
 
         .marker-color-input {
@@ -201,12 +310,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            transition: background 0.3s;
         }
 
-        .remove-marker-btn:hover {
-            background: #c82333;
-            transform: translateY(-50%) scale(1.1);
+        @media (hover: hover) {
+            .remove-marker-btn:hover {
+                background: #c82333;
+            }
         }
 
         .add-marker-btn {
@@ -218,7 +328,7 @@
             border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background 0.3s;
             margin-top: 10px;
         }
 
@@ -239,6 +349,12 @@
             min-height: 60px;
         }
 
+        @media (max-width: 768px) {
+            .color-section {
+                gap: 15px;
+            }
+        }
+
         .color-input {
             width: 60px;
             height: 60px;
@@ -246,6 +362,13 @@
             border-radius: 8px;
             cursor: pointer;
             padding: 0;
+        }
+
+        @media (max-width: 768px) {
+            .color-input {
+                width: 50px;
+                height: 50px;
+            }
         }
 
         .color-preview {
@@ -263,7 +386,14 @@
             position: relative;
         }
 
-        .preview-color:hover::after {
+        @media (max-width: 768px) {
+            .preview-color {
+                width: 35px;
+                height: 35px;
+            }
+        }
+
+        .preview-color[title]:hover::after {
             content: attr(title);
             position: absolute;
             bottom: -25px;
@@ -285,6 +415,12 @@
             margin-top: 30px;
         }
 
+        @media (max-width: 768px) {
+            .form-buttons {
+                margin-top: 20px;
+            }
+        }
+
         .btn {
             padding: 12px 24px;
             border: none;
@@ -293,6 +429,14 @@
             cursor: pointer;
             font-family: '游明朝', 'Yu Mincho', 'Hiragino Mincho ProN', 'MS Mincho', serif;
             transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
         }
 
         .btn-primary {
@@ -309,11 +453,15 @@
             background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
             color: white;
             width: 100%;
+            line-height: 1.4;
+            padding: 14px 24px;
         }
 
-        .btn-instagram:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(131, 58, 180, 0.4);
+        @media (hover: hover) {
+            .btn-instagram:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(131, 58, 180, 0.4);
+            }
         }
 
         .preview-container {
@@ -325,6 +473,12 @@
             justify-content: center;
         }
 
+        @media (max-width: 768px) {
+            .preview-container {
+                padding: 15px;
+            }
+        }
+
         .preview-canvas {
             max-width: 100%;
             max-height: 400px;
@@ -332,19 +486,28 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
+        @media (max-width: 768px) {
+            .preview-canvas {
+                max-height: 300px;
+            }
+        }
+
         .background-options {
             display: grid;
-            grid-template-columns: repeat(6, 50px);
-            grid-template-rows: repeat(2, 50px);
+            grid-template-columns: repeat(6, 1fr);
             gap: 8px;
             margin-top: 10px;
             width: 100%;
-            justify-content: center;
+        }
+
+        @media (max-width: 480px) {
+            .background-options {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
 
         .bg-option {
-            width: 50px;
-            height: 50px;
+            aspect-ratio: 1;
             border-radius: 8px;
             cursor: pointer;
             border: 3px solid transparent;
@@ -352,8 +515,10 @@
             box-sizing: border-box;
         }
 
-        .bg-option:hover {
-            transform: scale(1.05);
+        @media (hover: hover) {
+            .bg-option:hover {
+                transform: scale(1.05);
+            }
         }
 
         .bg-option.selected {
@@ -361,11 +526,109 @@
             box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
         }
 
+        .month-navigation {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 999;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 20px;
+            border-radius: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .month-navigation {
+                top: 70px;
+                gap: 15px;
+                padding: 6px 15px;
+            }
+        }
+
+        .nav-button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: #333;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+        }
+
+        @media (max-width: 768px) {
+            .nav-button {
+                width: 32px;
+                height: 32px;
+                font-size: 20px;
+            }
+        }
+
+        .nav-button:hover {
+            background: #f0f0f0;
+            transform: scale(1.1);
+        }
+
+        @media (hover: none) {
+            .nav-button:hover {
+                transform: none;
+            }
+        }
+
+        .nav-button:active {
+            transform: scale(0.95);
+        }
+
+        .nav-month-year {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        #navMonth {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        #navYear {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            #navMonth {
+                font-size: 0.9rem;
+            }
+            #navYear {
+                font-size: 0.8rem;
+            }
+        }
+
         .calendar-container {
-            width: 900px;
-            height: 1125px;
+            width: 100%;
+            max-width: 900px;
+            aspect-ratio: 900 / 1125;
             background: white;
             position: relative;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-container {
+                max-width: 100%;
+            }
         }
 
         .calendar-inner {
@@ -376,35 +639,84 @@
 
         .month-number {
             position: absolute;
-            left: 75px;
-            top: 100px;
-            font-size: 180px;
+            left: 8.33%;
+            top: 8.89%;
+            font-size: 20vw;
             font-weight: 300;
             line-height: 1;
         }
 
+        @media (min-width: 900px) {
+            .month-number {
+                font-size: 180px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .month-number {
+                font-size: 20vw;
+                top: 5%;
+                left: 6%;
+            }
+        }
+
         .header-info {
             position: absolute;
-            right: 75px;
-            top: 100px;
-            max-width: 300px;
+            right: 8.33%;
+            top: 8.89%;
+            max-width: 33.33%;
+        }
+
+        @media (max-width: 768px) {
+            .header-info {
+                top: 5%;
+                right: 5%;
+                max-width: 40%;
+            }
         }
 
         .month-title {
-            font-size: 54px;
+            font-size: 6vw;
             font-weight: 400;
             text-align: right;
             letter-spacing: 0;
             margin-bottom: 0;
         }
 
+        @media (min-width: 900px) {
+            .month-title {
+                font-size: 54px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .month-title {
+                font-size: 5vw;
+                margin-bottom: 3px;
+            }
+        }
+
         .year {
-            font-size: 48px;
+            font-size: 5.33vw;
             font-weight: 300;
             opacity: 0.7;
             text-align: right;
             letter-spacing: 2px;
             margin-bottom: 0;
+        }
+
+        @media (min-width: 900px) {
+            .year {
+                font-size: 48px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .year {
+                font-size: 5vw;
+                letter-spacing: 1px;
+                margin-bottom: 4px;
+            }
         }
 
         .legend {
@@ -419,57 +731,129 @@
             justify-content: flex-end;
         }
 
+        @media (max-width: 768px) {
+            .legend-item {
+                gap: 8px;
+                margin-bottom: 3px;
+            }
+        }
+
         .legend-color {
-            width: 34px;
-            height: 34px;
+            width: 3.78vw;
+            height: 3.78vw;
             border-radius: 50%;
             border: 2px solid #fff;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
+        @media (min-width: 900px) {
+            .legend-color {
+                width: 34px;
+                height: 34px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .legend-color {
+                width: 4.5vw;
+                height: 4.5vw;
+                min-width: 24px;
+                min-height: 24px;
+            }
+        }
+
         .legend-text {
-            font-size: 30px;
+            font-size: 3.33vw;
             font-weight: 400;
             letter-spacing: 0;
         }
 
+        @media (min-width: 900px) {
+            .legend-text {
+                font-size: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .legend-text {
+                font-size: 3.2vw;
+                min-font-size: 12px;
+            }
+        }
+
         .calendar-grid {
             position: absolute;
-            left: 75px;
-            top: 440px;
-            width: 750px;
+            left: 8.33%;
+            top: 39.11%;
+            width: 83.33%;
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 0;
         }
 
+        @media (max-width: 768px) {
+            .calendar-grid {
+                top: 38%;
+                left: 5%;
+                width: 90%;
+            }
+        }
+
         .day-header {
-            width: 107px;
-            height: 67px;
+            aspect-ratio: 107 / 67;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 3.11vw;
             font-weight: 400;
             letter-spacing: 3px;
             opacity: 0.8;
         }
 
+        @media (min-width: 900px) {
+            .day-header {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .day-header {
+                font-size: 3.5vw;
+                letter-spacing: 1px;
+            }
+        }
+
         .day {
-            width: 107px;
-            height: 90px;
+            aspect-ratio: 107 / 90;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 44px;
+            font-size: 4.89vw;
             font-weight: 300;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
         }
 
-        .day:hover {
-            transform: scale(1.05);
+        @media (min-width: 900px) {
+            .day {
+                font-size: 44px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .day {
+                font-size: 5.5vw;
+            }
+        }
+
+        @media (hover: hover) {
+            .day:hover {
+                transform: scale(1.05);
+            }
         }
 
         .day.other-month {
@@ -482,52 +866,52 @@
         }
 
         @keyframes markerChange {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(0.9);
-            }
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(0.9); }
+            100% { transform: scale(1); }
         }
 
         .day.transitioning {
             animation: markerChange 0.3s ease;
         }
+
+        @media (hover: none) and (pointer: coarse) {
+            .day {
+                -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+            }
+            
+            .day:active {
+                transform: scale(0.95);
+            }
+        }
+
+        /* スクロールバー */
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
     </style>
 </head>
 <body>
-    <button class="settings-button" id="settingsButton">⚙</button>
-    <button class="instagram-button" id="instagramButton">📷</button>
+    <button class="action-button settings-button" id="settingsButton">⚙</button>
+    <button class="action-button instagram-button" id="instagramButton">📷</button>
     
-    <div class="settings-modal" id="settingsModal">
-        <div class="settings-content">
-            <div class="settings-title">カレンダー設定</div>
-            
-            <div class="form-group">
-                <label class="form-label">年</label>
-                <select class="form-select" id="yearSelect"></select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">月</label>
-                <select class="form-select" id="monthSelect">
-                    <option value="0" selected>1月</option>
-                    <option value="1">2月</option>
-                    <option value="2">3月</option>
-                    <option value="3">4月</option>
-                    <option value="4">5月</option>
-                    <option value="5">6月</option>
-                    <option value="6">7月</option>
-                    <option value="7">8月</option>
-                    <option value="8">9月</option>
-                    <option value="9">10月</option>
-                    <option value="10">11月</option>
-                    <option value="11">12月</option>
-                </select>
-            </div>
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-title">カレンダー設定</div>
             
             <div class="form-group">
                 <label class="form-label">テーマカラー</label>
@@ -543,43 +927,29 @@
 
             <div class="form-group">
                 <label class="form-label">マーカー設定</label>
-                <div class="marker-settings" id="markerSettingsContainer">
-                </div>
+                <div class="marker-settings" id="markerSettingsContainer"></div>
                 <button class="add-marker-btn" id="addMarkerBtn">+ マーカーを追加</button>
             </div>
             
             <div class="form-buttons">
-                <button class="btn btn-secondary" id="cancelButton">キャンセル</button>
-                <button class="btn btn-primary" id="applyButton">適用</button>
+                <button class="btn btn-secondary" data-action="cancel">キャンセル</button>
+                <button class="btn btn-primary" data-action="apply">適用</button>
             </div>
         </div>
     </div>
 
-    <div class="instagram-modal" id="instagramModal">
-        <div class="instagram-content">
-            <div class="instagram-title">Instagram用画像エクスポート</div>
+    <div class="modal" id="instagramModal">
+        <div class="modal-content instagram-content">
+            <div class="modal-title instagram-title">画像エクスポート</div>
             
             <div class="form-group">
                 <label class="form-label">背景色</label>
-                <div class="background-options">
-                    <div class="bg-option selected" data-bg="#ffffff" style="background: #ffffff; border: 1px solid #dee2e6;" title="純白"></div>
-                    <div class="bg-option" data-bg="#fff0f5" style="background: #fff0f5;" title="桜色"></div>
-                    <div class="bg-option" data-bg="#fff9e6" style="background: #fff9e6;" title="淡黄"></div>
-                    <div class="bg-option" data-bg="#f0fbe8" style="background: #f0fbe8;" title="若葉"></div>
-                    <div class="bg-option" data-bg="#e6f4ff" style="background: #e6f4ff;" title="水浅葱"></div>
-                    <div class="bg-option" data-bg="#f0e6ff" style="background: #f0e6ff;" title="薄紫"></div>
-                    <div class="bg-option" data-bg="#fff5ee" style="background: #fff5ee;" title="生成り"></div>
-                    <div class="bg-option" data-bg="#fef0e3" style="background: #fef0e3;" title="杏子"></div>
-                    <div class="bg-option" data-bg="#f5e1ce" style="background: #f5e1ce;" title="小麦"></div>
-                    <div class="bg-option" data-bg="#ede0d5" style="background: #ede0d5;" title="香色"></div>
-                    <div class="bg-option" data-bg="#e5dfe6" style="background: #e5dfe6;" title="淡藤"></div>
-                    <div class="bg-option" data-bg="#e0e9e5" style="background: #e0e9e5;" title="白磁"></div>
-                </div>
+                <div class="background-options" id="backgroundOptions"></div>
             </div>
 
             <div class="form-group">
                 <label class="form-label">フッターテキスト（任意）</label>
-                <input type="text" class="form-input" id="footerText" placeholder="例: @your_instagram_id">
+                <input type="text" class="form-control" id="footerText" placeholder="例: @your_instagram_id">
             </div>
 
             <div class="form-group">
@@ -590,9 +960,10 @@
             </div>
             
             <div class="form-buttons">
-                <button class="btn btn-secondary" id="cancelInstagram">キャンセル</button>
-                <button class="btn btn-instagram" id="exportInstagram">
-                    画像をダウンロード (1080×1350px)
+                <button class="btn btn-secondary" data-action="cancel-instagram">キャンセル</button>
+                <button class="btn btn-instagram" data-action="export">
+                    画像をダウンロード<br>
+                    <span style="font-size: 0.85em; opacity: 0.9;">(1080×1350px)</span>
                 </button>
             </div>
         </div>
@@ -600,1027 +971,1283 @@
 
     <div class="calendar-container">
         <div class="calendar-inner">
+            <div class="month-navigation">
+                <button class="nav-button nav-prev" id="prevMonth">‹</button>
+                <div class="nav-month-year">
+                    <span id="navMonth"></span>
+                    <span id="navYear"></span>
+                </div>
+                <button class="nav-button nav-next" id="nextMonth">›</button>
+            </div>
             <div class="month-number" id="monthNumber">1</div>
             <div class="header-info">
                 <div class="month-title" id="monthTitle">素土</div>
                 <div class="year" id="yearDisplay">2025</div>
-                <div class="legend" id="legendContainer">
-                </div>
+                <div class="legend" id="legendContainer"></div>
             </div>
-
-            <div class="calendar-grid" id="calendarGrid">
-            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
         </div>
     </div>
 
     <script>
-        let currentYear = 2025;
-        let currentMonth = 0;
-        let markerData = {};
-        let currentColors = {
-            primary: '#000000',
-            accent: '#e0e0e0',
-            hover: '#d0d0d0',
-            dark: '#333333',
-            markerText: '#000000'
+        'use strict';
+
+        // 定数定義
+        const CONFIG = {
+            STORE_NAME: '素土',
+            DEFAULT_YEAR: new Date().getFullYear(),
+            DEFAULT_MONTH: new Date().getMonth(),
+            MIN_YEAR: 2020,
+            MAX_YEAR: 2035,
+            MAX_MARKERS: 3,
+            MOBILE_BREAKPOINT: 768,
+            DAY_HEADERS: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
+            MONTHS: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+            BACKGROUNDS: [
+                { color: '#ffffff', name: '純白', border: true },
+                { color: '#fff0f5', name: '桜色' },
+                { color: '#fff9e6', name: '淡黄' },
+                { color: '#f0fbe8', name: '若葉' },
+                { color: '#e6f4ff', name: '水浅葱' },
+                { color: '#f0e6ff', name: '薄紫' },
+                { color: '#fff5ee', name: '生成り' },
+                { color: '#fef0e3', name: '杏子' },
+                { color: '#f5e1ce', name: '小麦' },
+                { color: '#ede0d5', name: '香色' },
+                { color: '#e5dfe6', name: '淡藤' },
+                { color: '#e0e9e5', name: '白磁' }
+            ]
         };
-        
-        let activeMarkers = {
-            1: {
-                label: '営業日',
-                color: '#c9ddf7',
-                textColor: '#1976d2',
-                active: true
+
+        // アプリケーション状態
+        const AppState = {
+            currentYear: CONFIG.DEFAULT_YEAR,
+            currentMonth: CONFIG.DEFAULT_MONTH,
+            markerData: {},
+            currentColors: {
+                primary: '#000000',
+                accent: '#e0e0e0',
+                hover: '#d0d0d0',
+                dark: '#333333',
+                markerText: '#000000'
+            },
+            activeMarkers: {
+                1: {
+                    label: '営業日',
+                    color: '#f0f0f0',
+                    textColor: '#000000',
+                    active: true
+                }
+            },
+            selectedBackground: '#ffffff'
+        };
+
+        // ユーティリティ関数
+        const Utils = {
+            isTouchDevice: () => 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+            isMobile: () => window.innerWidth <= CONFIG.MOBILE_BREAKPOINT,
+            
+            rgbToHsl(hexColor) {
+                const r = parseInt(hexColor.slice(1, 3), 16) / 255;
+                const g = parseInt(hexColor.slice(3, 5), 16) / 255;
+                const b = parseInt(hexColor.slice(5, 7), 16) / 255;
+                
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                const l = (max + min) / 2;
+                
+                let h, s;
+                if (max === min) {
+                    h = s = 0;
+                } else {
+                    const d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    
+                    if (max === r) {
+                        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+                    } else if (max === g) {
+                        h = ((b - r) / d + 2) / 6;
+                    } else {
+                        h = ((r - g) / d + 4) / 6;
+                    }
+                }
+                
+                return { h: h * 360, s: s * 100, l: l * 100 };
+            },
+
+            hslToRgb(h, s, l) {
+                h = h / 360;
+                s = s / 100;
+                l = l / 100;
+                
+                let r, g, b;
+                
+                if (s === 0) {
+                    r = g = b = l;
+                } else {
+                    const hue2rgb = (p, q, t) => {
+                        if (t < 0) t += 1;
+                        if (t > 1) t -= 1;
+                        if (t < 1/6) return p + (q - p) * 6 * t;
+                        if (t < 1/2) return q;
+                        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                        return p;
+                    };
+                    
+                    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                    const p = 2 * l - q;
+                    r = hue2rgb(p, q, h + 1/3);
+                    g = hue2rgb(p, q, h);
+                    b = hue2rgb(p, q, h - 1/3);
+                }
+                
+                return '#' + [r, g, b].map(x => {
+                    const hex = Math.round(x * 255).toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                }).join('');
+            },
+
+            hexToRgba(hex, alpha) {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            },
+
+            adjustColorBrightness(color, amount) {
+                const usePound = color[0] === "#";
+                const col = usePound ? color.slice(1) : color;
+                const num = parseInt(col, 16);
+                let r = (num >> 16) + amount;
+                let g = ((num >> 8) & 0x00FF) + amount;
+                let b = (num & 0x0000FF) + amount;
+                r = r > 255 ? 255 : r < 0 ? 0 : r;
+                g = g > 255 ? 255 : g < 0 ? 0 : g;
+                b = b > 255 ? 255 : b < 0 ? 0 : b;
+                return (usePound ? "#" : "") + (r << 16 | g << 8 | b).toString(16).padStart(6, '0');
+            },
+
+            generateTextColor(bgColor) {
+                const r = parseInt(bgColor.slice(1, 3), 16);
+                const g = parseInt(bgColor.slice(3, 5), 16);
+                const b = parseInt(bgColor.slice(5, 7), 16);
+                
+                // WCAG準拠の輝度計算
+                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                
+                // しきい値を160に設定（より多くの場合で濃い色を使用）
+                if (brightness > 160) {
+                    // 明るい背景には濃い色
+                    const factor = Math.max(0.15, Math.min(0.4, (brightness - 100) / 200));
+                    const darkR = Math.floor(r * factor);
+                    const darkG = Math.floor(g * factor);
+                    const darkB = Math.floor(b * factor);
+                    
+                    return `#${darkR.toString(16).padStart(2, '0')}${darkG.toString(16).padStart(2, '0')}${darkB.toString(16).padStart(2, '0')}`;
+                } else {
+                    // 暗い背景には白
+                    return '#ffffff';
+                }
+            },
+
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
             }
         };
 
-        let selectedBackground = '#ffffff';
-        const storeName = '素土';
-
-        function rgbToHsl(hexColor) {
-            const r = parseInt(hexColor.slice(1, 3), 16) / 255;
-            const g = parseInt(hexColor.slice(3, 5), 16) / 255;
-            const b = parseInt(hexColor.slice(5, 7), 16) / 255;
-            
-            const max = Math.max(r, g, b);
-            const min = Math.min(r, g, b);
-            const l = (max + min) / 2;
-            
-            let h, s;
-            if (max === min) {
-                h = s = 0;
-            } else {
-                const d = max - min;
-                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        // カラーマネージャー
+        const ColorManager = {
+            generateColors(baseColor) {
+                const r = parseInt(baseColor.slice(1, 3), 16);
+                const g = parseInt(baseColor.slice(3, 5), 16);
+                const b = parseInt(baseColor.slice(5, 7), 16);
                 
-                if (max === r) {
-                    h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-                } else if (max === g) {
-                    h = ((b - r) / d + 2) / 6;
+                const hoverRatio = 0.25;
+                const hoverR = Math.round(r * hoverRatio + 255 * (1 - hoverRatio));
+                const hoverG = Math.round(g * hoverRatio + 255 * (1 - hoverRatio));
+                const hoverB = Math.round(b * hoverRatio + 255 * (1 - hoverRatio));
+                const hover = `rgb(${hoverR}, ${hoverG}, ${hoverB})`;
+
+                return {
+                    primary: baseColor,
+                    accent: '',
+                    hover: hover,
+                    dark: `rgb(${Math.max(0, r - 40)}, ${Math.max(0, g - 40)}, ${Math.max(0, b - 40)})`,
+                    markerText: baseColor
+                };
+            },
+
+            generateOptimalMarkerColors(themeColor) {
+                const hsl = Utils.rgbToHsl(themeColor);
+                
+                // マーカー1: 最も控えめ（薄く、彩度低い）
+                let marker1, marker2, marker3;
+                
+                if (hsl.s === 0) {
+                    // グレースケールの場合は明度差を大きくする
+                    marker1 = Utils.hslToRgb(0, 0, 90);  // 薄いグレー
+                    marker2 = Utils.hslToRgb(0, 0, 72);  // 中間のグレー
+                    marker3 = Utils.hslToRgb(0, 0, 55);  // 濃いグレー
                 } else {
-                    h = ((r - g) / d + 4) / 6;
+                    // 有彩色の場合：調和を重視した配色
+                    
+                    // マーカー1: 基本色（薄いが視認可能）
+                    marker1 = Utils.hslToRgb(
+                        hsl.h,
+                        Math.min(hsl.s * 0.35, 28),  // 彩度28%程度で視認性を確保
+                        88  // 明度をわずかに下げてコントラストを改善
+                    );
+                    
+                    // マーカー2: 類似色（中間的な強度）
+                    // 色相を30-45度程度ずらして調和を保つ
+                    const hueShift2 = hsl.h < 60 || hsl.h > 300 ? 30 : -30; // 赤系は黄色方向、それ以外は逆方向
+                    const marker2Hue = (hsl.h + hueShift2 + 360) % 360;
+                    marker2 = Utils.hslToRgb(
+                        marker2Hue,
+                        Math.min(hsl.s * 0.35, 28),  // 彩度28%程度
+                        75  // 明度を段階的に下げる
+                    );
+                    
+                    // マーカー3: 同系色の濃い版または隣接色
+                    // 暖色系の場合は濃い同系色、寒色系の場合は隣接色
+                    let marker3Hue, marker3Saturation, marker3Lightness;
+                    
+                    if ((hsl.h >= 0 && hsl.h <= 60) || (hsl.h >= 300 && hsl.h <= 360)) {
+                        // 赤〜黄色系（暖色系）：同系色の濃い版
+                        marker3Hue = hsl.h;
+                        marker3Saturation = Math.min(hsl.s * 0.6, 45);  // 彩度を上げる
+                        marker3Lightness = 55;  // 明度を大幅に下げる
+                    } else if (hsl.h >= 61 && hsl.h <= 180) {
+                        // 緑〜シアン系：黄緑または青緑方向へ
+                        const hueShift3 = hsl.h < 120 ? -40 : 40;
+                        marker3Hue = (hsl.h + hueShift3 + 360) % 360;
+                        marker3Saturation = Math.min(hsl.s * 0.45, 35);
+                        marker3Lightness = 62;
+                    } else {
+                        // 青〜紫系（寒色系）：紫または緑方向へ
+                        const hueShift3 = hsl.h < 240 ? 50 : -50;
+                        marker3Hue = (hsl.h + hueShift3 + 360) % 360;
+                        marker3Saturation = Math.min(hsl.s * 0.4, 32);
+                        marker3Lightness = 65;
+                    }
+                    
+                    marker3 = Utils.hslToRgb(
+                        marker3Hue,
+                        marker3Saturation,
+                        marker3Lightness
+                    );
+                }
+                
+                return { marker1, marker2, marker3 };
+            },
+
+            updateMarkerColorsFromTheme(themeColor) {
+                const optimalColors = this.generateOptimalMarkerColors(themeColor);
+                
+                if (AppState.activeMarkers[1]) {
+                    AppState.activeMarkers[1].color = optimalColors.marker1;
+                    AppState.activeMarkers[1].textColor = themeColor;
+                }
+                
+                if (AppState.activeMarkers[2] && AppState.activeMarkers[2].active) {
+                    AppState.activeMarkers[2].color = optimalColors.marker2;
+                    AppState.activeMarkers[2].textColor = Utils.generateTextColor(optimalColors.marker2);
+                }
+                
+                if (AppState.activeMarkers[3] && AppState.activeMarkers[3].active) {
+                    AppState.activeMarkers[3].color = optimalColors.marker3;
+                    AppState.activeMarkers[3].textColor = Utils.generateTextColor(optimalColors.marker3);
                 }
             }
-            
-            return { h: h * 360, s: s * 100, l: l * 100 };
-        }
+        };
 
-        function hslToRgb(h, s, l) {
-            h = h / 360;
-            s = s / 100;
-            l = l / 100;
-            
-            let r, g, b;
-            
-            if (s === 0) {
-                r = g = b = l;
-            } else {
-                const hue2rgb = (p, q, t) => {
-                    if (t < 0) t += 1;
-                    if (t > 1) t -= 1;
-                    if (t < 1/6) return p + (q - p) * 6 * t;
-                    if (t < 1/2) return q;
-                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                    return p;
+        // カレンダーレンダラー
+        const CalendarRenderer = {
+            generateLegend() {
+                const legendContainer = document.getElementById('legendContainer');
+                const fragment = document.createDocumentFragment();
+                
+                Object.keys(AppState.activeMarkers).forEach(key => {
+                    if (AppState.activeMarkers[key].active) {
+                        const marker = AppState.activeMarkers[key];
+                        const legendItem = document.createElement('div');
+                        legendItem.className = 'legend-item';
+                        
+                        const legendText = document.createElement('div');
+                        legendText.className = 'legend-text';
+                        legendText.textContent = marker.label;
+                        legendText.style.color = AppState.currentColors.primary;
+                        
+                        const legendColor = document.createElement('div');
+                        legendColor.className = 'legend-color';
+                        legendColor.style.backgroundColor = marker.color;
+                        
+                        legendItem.appendChild(legendText);
+                        legendItem.appendChild(legendColor);
+                        fragment.appendChild(legendItem);
+                    }
+                });
+                
+                legendContainer.innerHTML = '';
+                legendContainer.appendChild(fragment);
+            },
+
+            generateCalendar() {
+                requestAnimationFrame(() => {
+                    document.getElementById('monthNumber').textContent = AppState.currentMonth + 1;
+                    document.getElementById('monthTitle').textContent = CONFIG.STORE_NAME;
+                    document.getElementById('yearDisplay').textContent = AppState.currentYear;
+                    
+                    // ナビゲーションの更新
+                    document.getElementById('navMonth').textContent = CONFIG.MONTHS[AppState.currentMonth];
+                    document.getElementById('navYear').textContent = AppState.currentYear;
+
+                    this.generateLegend();
+
+                    const grid = document.getElementById('calendarGrid');
+                    const fragment = document.createDocumentFragment();
+
+                    // 曜日ヘッダー
+                    CONFIG.DAY_HEADERS.forEach(headerText => {
+                        const header = document.createElement('div');
+                        header.className = 'day-header';
+                        header.textContent = headerText;
+                        header.style.color = AppState.currentColors.primary;
+                        fragment.appendChild(header);
+                    });
+
+                    const daysInMonth = new Date(AppState.currentYear, AppState.currentMonth + 1, 0).getDate();
+                    const firstDay = new Date(AppState.currentYear, AppState.currentMonth, 1).getDay();
+                    const prevMonthDays = new Date(AppState.currentYear, AppState.currentMonth, 0).getDate();
+
+                    // 前月の日付
+                    for (let i = firstDay - 1; i >= 0; i--) {
+                        const day = this.createDayElement(prevMonthDays - i, true);
+                        fragment.appendChild(day);
+                    }
+
+                    // 当月の日付
+                    for (let date = 1; date <= daysInMonth; date++) {
+                        const day = this.createDayElement(date, false);
+                        fragment.appendChild(day);
+                    }
+
+                    // 来月の日付
+                    const needsSixWeeks = (firstDay + daysInMonth) > 35;
+                    const totalCells = needsSixWeeks ? 42 : 35;
+                    const nextMonthDays = totalCells - (firstDay + daysInMonth);
+                    for (let date = 1; date <= nextMonthDays; date++) {
+                        const day = this.createDayElement(date, true);
+                        fragment.appendChild(day);
+                    }
+
+                    grid.innerHTML = '';
+                    grid.appendChild(fragment);
+                    StyleManager.applyMarkerStyles();
+                });
+            },
+
+            createDayElement(date, isOtherMonth) {
+                const day = document.createElement('div');
+                day.className = isOtherMonth ? 'day other-month' : 'day';
+                day.textContent = date;
+                
+                if (isOtherMonth) {
+                    day.style.color = Utils.hexToRgba(AppState.currentColors.primary, 0.2);
+                } else {
+                    day.dataset.date = date;
+                    day.dataset.year = AppState.currentYear;
+                    day.dataset.month = AppState.currentMonth;
+
+                    const dayKey = `${AppState.currentYear}-${AppState.currentMonth}-${date}`;
+                    const markerType = AppState.markerData[dayKey];
+                    
+                    if (markerType && AppState.activeMarkers[markerType] && AppState.activeMarkers[markerType].active) {
+                        day.classList.add(`marker-${markerType}`);
+                    } else if (markerType && (!AppState.activeMarkers[markerType] || !AppState.activeMarkers[markerType].active)) {
+                        delete AppState.markerData[dayKey];
+                    }
+                    
+                    if (!markerType || !AppState.activeMarkers[markerType] || !AppState.activeMarkers[markerType].active) {
+                        day.style.color = AppState.currentColors.primary;
+                    }
+
+                    // タッチとクリックの両方に対応
+                    if (Utils.isTouchDevice()) {
+                        let touchStarted = false;
+                        day.addEventListener('touchstart', (e) => {
+                            touchStarted = true;
+                            e.preventDefault();
+                        });
+                        day.addEventListener('touchend', (e) => {
+                            if (touchStarted) {
+                                e.preventDefault();
+                                EventHandlers.handleDayClick.call(day, e);
+                            }
+                            touchStarted = false;
+                        });
+                    } else {
+                        day.addEventListener('click', EventHandlers.handleDayClick);
+                    }
+                }
+                
+                return day;
+            }
+        };
+
+        // スタイルマネージャー
+        const StyleManager = {
+            applyMarkerStyles() {
+                let styleSheet = document.getElementById('dynamic-marker-styles');
+                if (!styleSheet) {
+                    styleSheet = document.createElement('style');
+                    styleSheet.id = 'dynamic-marker-styles';
+                    document.head.appendChild(styleSheet);
+                }
+                
+                const containerWidth = document.querySelector('.calendar-container').offsetWidth;
+                const markerSize = Math.min(40, containerWidth * 0.044);
+                
+                let styles = '';
+                Object.keys(AppState.activeMarkers).forEach(key => {
+                    if (AppState.activeMarkers[key].active) {
+                        const marker = AppState.activeMarkers[key];
+                        const fontWeight = key === '1' ? '400' : key === '2' ? '500' : '600';
+                        
+                        styles += `
+                            .day.marker-${key} {
+                                background: radial-gradient(circle at center, ${marker.color} ${markerSize}px, transparent ${markerSize}px) !important;
+                                color: ${marker.textColor} !important;
+                                font-weight: ${fontWeight} !important;
+                            }
+                            .day.marker-${key}:hover {
+                                background: radial-gradient(circle at center, ${Utils.adjustColorBrightness(marker.color, -15)} ${markerSize}px, transparent ${markerSize}px) !important;
+                            }
+                        `;
+                    }
+                });
+                
+                styles += `
+                    @media (hover: hover) {
+                        .day:not(.other-month):not([class*="marker-"]):hover {
+                            background: radial-gradient(circle at center, ${Utils.hexToRgba(AppState.currentColors.primary, 0.06)} ${markerSize}px, transparent ${markerSize}px) !important;
+                        }
+                    }
+                `;
+                
+                styleSheet.innerHTML = styles;
+            },
+
+            applyColors() {
+                const color = AppState.currentColors.primary;
+                const elements = {
+                    monthNumber: document.getElementById('monthNumber'),
+                    monthTitle: document.getElementById('monthTitle'),
+                    yearDisplay: document.getElementById('yearDisplay')
                 };
                 
-                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                const p = 2 * l - q;
-                r = hue2rgb(p, q, h + 1/3);
-                g = hue2rgb(p, q, h);
-                b = hue2rgb(p, q, h - 1/3);
-            }
-            
-            return '#' + [r, g, b].map(x => {
-                const hex = Math.round(x * 255).toString(16);
-                return hex.length === 1 ? '0' + hex : hex;
-            }).join('');
-        }
-
-        function generateOptimalMarkerColors(themeColor) {
-            const hsl = rgbToHsl(themeColor);
-            
-            const marker1Saturation = hsl.s > 0 ? Math.max(hsl.s * 0.4, 20) : 0;
-            const marker1Lightness = 85;
-            const marker1 = hslToRgb(hsl.h, marker1Saturation, marker1Lightness);
-            
-            const marker1Hsl = rgbToHsl(marker1);
-            
-            let marker2, marker3;
-            if (hsl.s === 0) {
-                marker2 = hslToRgb(0, 0, 75);
-                marker3 = hslToRgb(0, 0, 65);
-            } else {
-                const marker2Hue = (marker1Hsl.h + 120) % 360;
-                marker2 = hslToRgb(marker2Hue, marker1Hsl.s, marker1Hsl.l);
-                
-                const marker3Hue = (marker1Hsl.h + 240) % 360;
-                marker3 = hslToRgb(marker3Hue, marker1Hsl.s, marker1Hsl.l);
-            }
-            
-            return {
-                marker1: marker1,
-                marker2: marker2,
-                marker3: marker3
-            };
-        }
-
-        function updateMarkerColorsFromTheme(themeColor) {
-            const optimalColors = generateOptimalMarkerColors(themeColor);
-            
-            if (activeMarkers[1]) {
-                activeMarkers[1].color = optimalColors.marker1;
-                activeMarkers[1].textColor = themeColor;
-            }
-            
-            if (activeMarkers[2] && activeMarkers[2].active) {
-                activeMarkers[2].color = optimalColors.marker2;
-                activeMarkers[2].textColor = generateTextColor(optimalColors.marker2);
-            }
-            
-            if (activeMarkers[3] && activeMarkers[3].active) {
-                activeMarkers[3].color = optimalColors.marker3;
-                activeMarkers[3].textColor = generateTextColor(optimalColors.marker3);
-            }
-        }
-
-        function generateColors(baseColor) {
-            const r = parseInt(baseColor.slice(1, 3), 16);
-            const g = parseInt(baseColor.slice(3, 5), 16);
-            const b = parseInt(baseColor.slice(5, 7), 16);
-            
-            const hoverRatio = 0.25;
-            const hoverR = Math.round(r * hoverRatio + 255 * (1 - hoverRatio));
-            const hoverG = Math.round(g * hoverRatio + 255 * (1 - hoverRatio));
-            const hoverB = Math.round(b * hoverRatio + 255 * (1 - hoverRatio));
-            const hover = `rgb(${hoverR}, ${hoverG}, ${hoverB})`;
-
-            return {
-                primary: baseColor,
-                accent: '',
-                hover: hover,
-                dark: `rgb(${Math.max(0, r - 40)}, ${Math.max(0, g - 40)}, ${Math.max(0, b - 40)})`,
-                markerText: baseColor
-            };
-        }
-
-        function generateLegend() {
-            const legendContainer = document.getElementById('legendContainer');
-            legendContainer.innerHTML = '';
-            
-            Object.keys(activeMarkers).forEach(key => {
-                if (activeMarkers[key].active) {
-                    const marker = activeMarkers[key];
-                    const legendItem = document.createElement('div');
-                    legendItem.className = 'legend-item';
-                    
-                    const legendText = document.createElement('div');
-                    legendText.className = 'legend-text';
-                    legendText.textContent = marker.label;
-                    legendText.style.color = currentColors.primary;
-                    
-                    const legendColor = document.createElement('div');
-                    legendColor.className = 'legend-color';
-                    legendColor.style.backgroundColor = marker.color;
-                    
-                    legendItem.appendChild(legendText);
-                    legendItem.appendChild(legendColor);
-                    legendContainer.appendChild(legendItem);
-                }
-            });
-        }
-
-        function generateCalendar() {
-            document.getElementById('monthNumber').textContent = currentMonth + 1;
-            document.getElementById('monthTitle').textContent = storeName;
-            document.getElementById('yearDisplay').textContent = currentYear;
-
-            generateLegend();
-
-            const grid = document.getElementById('calendarGrid');
-            grid.innerHTML = '';
-
-            const dayHeaders = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-            dayHeaders.forEach(headerText => {
-                const header = document.createElement('div');
-                header.className = 'day-header';
-                header.textContent = headerText;
-                header.style.color = currentColors.primary;
-                grid.appendChild(header);
-            });
-
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
-
-            for (let i = firstDay - 1; i >= 0; i--) {
-                const day = document.createElement('div');
-                day.className = 'day other-month';
-                day.textContent = prevMonthDays - i;
-                day.style.color = hexToRgba(currentColors.primary, 0.2);
-                grid.appendChild(day);
-            }
-
-            for (let date = 1; date <= daysInMonth; date++) {
-                const day = document.createElement('div');
-                day.className = 'day';
-                day.textContent = date;
-                day.dataset.date = date;
-                day.dataset.year = currentYear;
-                day.dataset.month = currentMonth;
-
-                const dayKey = `${currentYear}-${currentMonth}-${date}`;
-                const markerType = markerData[dayKey];
-                if (markerType && activeMarkers[markerType] && activeMarkers[markerType].active) {
-                    day.classList.add(`marker-${markerType}`);
-                } else if (markerType && (!activeMarkers[markerType] || !activeMarkers[markerType].active)) {
-                    delete markerData[dayKey];
-                }
-                
-                if (!markerType || !activeMarkers[markerType] || !activeMarkers[markerType].active) {
-                    day.style.color = currentColors.primary;
-                }
-
-                day.addEventListener('click', function() {
-                    toggleMarker(this);
+                Object.values(elements).forEach(el => {
+                    if (el) el.style.color = color;
                 });
-
-                grid.appendChild(day);
-            }
-
-            const needsSixWeeks = (firstDay + daysInMonth) > 35;
-            const totalCells = needsSixWeeks ? 42 : 35;
-            const nextMonthDays = totalCells - (firstDay + daysInMonth);
-            for (let date = 1; date <= nextMonthDays; date++) {
-                const day = document.createElement('div');
-                day.className = 'day other-month';
-                day.textContent = date;
-                day.style.color = hexToRgba(currentColors.primary, 0.2);
-                grid.appendChild(day);
-            }
-
-            applyMarkerStyles();
-        }
-
-        function toggleMarker(element) {
-            if (element.classList.contains('other-month')) return;
-
-            element.classList.add('transitioning');
-            setTimeout(() => {
-                element.classList.remove('transitioning');
-            }, 300);
-
-            const year = element.dataset.year;
-            const month = element.dataset.month;
-            const date = element.dataset.date;
-            const dayKey = `${year}-${month}-${date}`;
-
-            const activeMarkerKeys = Object.keys(activeMarkers).filter(key => activeMarkers[key].active).map(Number);
-            if (activeMarkerKeys.length === 0) return;
-
-            let currentMarker = markerData[dayKey] || 0;
-            
-            activeMarkerKeys.forEach(key => {
-                element.classList.remove(`marker-${key}`);
-            });
-            
-            let nextMarkerIndex = -1;
-            for (let i = 0; i < activeMarkerKeys.length; i++) {
-                if (currentMarker < activeMarkerKeys[i]) {
-                    nextMarkerIndex = i;
-                    break;
+                
+                if (elements.yearDisplay) {
+                    elements.yearDisplay.style.opacity = '0.7';
                 }
-            }
-            
-            if (nextMarkerIndex === -1) {
-                delete markerData[dayKey];
-                element.style.color = currentColors.primary;
-            } else {
-                const nextMarker = activeMarkerKeys[nextMarkerIndex];
-                markerData[dayKey] = nextMarker;
-                element.classList.add(`marker-${nextMarker}`);
-                element.style.color = '';
-            }
-        }
-
-        function applyMarkerStyles() {
-            let styleSheet = document.getElementById('dynamic-marker-styles');
-            if (!styleSheet) {
-                styleSheet = document.createElement('style');
-                styleSheet.id = 'dynamic-marker-styles';
-                document.head.appendChild(styleSheet);
-            }
-            
-            let styles = '';
-            Object.keys(activeMarkers).forEach(key => {
-                if (activeMarkers[key].active) {
-                    const marker = activeMarkers[key];
-                    styles += `
-                        .day.marker-${key} {
-                            background: radial-gradient(circle at center, ${marker.color} 40px, transparent 40px) !important;
-                            color: ${marker.textColor} !important;
-                            font-weight: 400 !important;
+                
+                document.querySelectorAll('.legend-text, .day-header').forEach(el => {
+                    el.style.color = color;
+                });
+                
+                document.querySelectorAll('.day:not(.other-month)').forEach(day => {
+                    let hasMarker = false;
+                    Object.keys(AppState.activeMarkers).forEach(key => {
+                        if (day.classList.contains(`marker-${key}`)) {
+                            hasMarker = true;
+                            day.style.color = '';
                         }
-                        .day.marker-${key}:hover {
-                            background: radial-gradient(circle at center, ${adjustColorBrightness(marker.color, -10)} 40px, transparent 40px) !important;
-                        }
-                    `;
-                }
-            });
-            
-            styleSheet.innerHTML = styles;
-        }
-
-        function adjustColorBrightness(color, amount) {
-            const usePound = color[0] === "#";
-            const col = usePound ? color.slice(1) : color;
-            const num = parseInt(col, 16);
-            let r = (num >> 16) + amount;
-            let g = ((num >> 8) & 0x00FF) + amount;
-            let b = (num & 0x0000FF) + amount;
-            r = r > 255 ? 255 : r < 0 ? 0 : r;
-            g = g > 255 ? 255 : g < 0 ? 0 : g;
-            b = b > 255 ? 255 : b < 0 ? 0 : b;
-            return (usePound ? "#" : "") + (r << 16 | g << 8 | b).toString(16).padStart(6, '0');
-        }
-
-        function generateMarkerSettings() {
-            const container = document.getElementById('markerSettingsContainer');
-            container.innerHTML = '';
-            
-            const header = document.createElement('div');
-            header.className = 'marker-settings-header';
-            
-            const title = document.createElement('div');
-            title.className = 'marker-settings-title';
-            title.textContent = 'テーマカラーを変更すると、マーカーの色も自動的に調整されます';
-            
-            header.appendChild(title);
-            container.appendChild(header);
-            
-            Object.keys(activeMarkers).forEach(key => {
-                if (activeMarkers[key].active) {
-                    const marker = activeMarkers[key];
-                    const markerItem = document.createElement('div');
-                    markerItem.className = key === '1' ? 'marker-item' : 'marker-item removable';
-                    
-                    const preview = document.createElement('div');
-                    preview.className = 'marker-preview';
-                    preview.id = `marker${key}Preview`;
-                    preview.style.backgroundColor = marker.color;
-                    
-                    const labelInput = document.createElement('input');
-                    labelInput.type = 'text';
-                    labelInput.className = 'marker-label-input';
-                    labelInput.id = `marker${key}Label`;
-                    labelInput.value = marker.label;
-                    labelInput.placeholder = `マーカー${key}の名称（例：営業日）`;
-                    
-                    const colorInput = document.createElement('input');
-                    colorInput.type = 'color';
-                    colorInput.className = 'marker-color-input';
-                    colorInput.id = `marker${key}Color`;
-                    colorInput.value = marker.color;
-                    
-                    colorInput.addEventListener('input', function() {
-                        preview.style.backgroundColor = this.value;
                     });
-                    
-                    markerItem.appendChild(preview);
-                    markerItem.appendChild(labelInput);
-                    markerItem.appendChild(colorInput);
-                    
-                    if (key !== '1') {
-                        const removeBtn = document.createElement('button');
-                        removeBtn.className = 'remove-marker-btn';
-                        removeBtn.innerHTML = '×';
-                        removeBtn.onclick = () => removeMarker(key);
-                        markerItem.appendChild(removeBtn);
-                    }
-                    
-                    container.appendChild(markerItem);
-                }
-            });
-            
-            const activeCount = Object.values(activeMarkers).filter(m => m.active).length;
-            const addBtn = document.getElementById('addMarkerBtn');
-            if (activeCount >= 3) {
-                addBtn.disabled = true;
-                addBtn.textContent = 'マーカーは最大3つまで';
-            } else {
-                addBtn.disabled = false;
-                addBtn.textContent = '+ マーカーを追加';
-            }
-        }
-
-        function addMarker() {
-            const activeCount = Object.values(activeMarkers).filter(m => m.active).length;
-            if (activeCount >= 3) return;
-            
-            const nextKey = activeCount + 1;
-            const optimalColors = generateOptimalMarkerColors(currentColors.primary);
-            
-            if (nextKey === 2) {
-                if (!activeMarkers[2]) {
-                    activeMarkers[2] = {
-                        label: '会議日',
-                        color: optimalColors.marker2,
-                        textColor: generateTextColor(optimalColors.marker2),
-                        active: true
-                    };
-                } else {
-                    activeMarkers[2].color = optimalColors.marker2;
-                    activeMarkers[2].textColor = generateTextColor(optimalColors.marker2);
-                    activeMarkers[2].active = true;
-                }
-            } else if (nextKey === 3) {
-                if (!activeMarkers[3]) {
-                    activeMarkers[3] = {
-                        label: 'イベント',
-                        color: optimalColors.marker3,
-                        textColor: generateTextColor(optimalColors.marker3),
-                        active: true
-                    };
-                } else {
-                    activeMarkers[3].color = optimalColors.marker3;
-                    activeMarkers[3].textColor = generateTextColor(optimalColors.marker3);
-                    activeMarkers[3].active = true;
-                }
-            }
-            
-            generateMarkerSettings();
-            applyMarkerStyles();
-        }
-
-        function removeMarker(key) {
-            activeMarkers[key].active = false;
-            
-            Object.keys(markerData).forEach(dayKey => {
-                if (markerData[dayKey] == key) {
-                    delete markerData[dayKey];
-                }
-            });
-            
-            generateMarkerSettings();
-            generateCalendar();
-        }
-
-        // Canvas描画を修正
-        function drawInstagramCanvas(canvas, isPreview = false) {
-            const ctx = canvas.getContext('2d');
-            
-            const targetWidth = isPreview ? 280 : 1080;
-            const targetHeight = isPreview ? 350 : 1350;
-            
-            canvas.width = targetWidth;
-            canvas.height = targetHeight;
-            
-            // 背景
-            ctx.fillStyle = selectedBackground;
-            ctx.fillRect(0, 0, targetWidth, targetHeight);
-            
-            // スケール計算（オリジナルの900x1125をキャンバスに収める）
-            const baseWidth = 900;
-            const baseHeight = 1125;
-            const scale = Math.min(targetWidth / baseWidth, targetHeight / baseHeight) * 0.9;
-            
-            // キャンバスの中央に配置するためのオフセット
-            const offsetX = (targetWidth - baseWidth * scale) / 2;
-            const offsetY = (targetHeight - baseHeight * scale) / 2;
-            
-            const fontFamily = "'游明朝', 'Yu Mincho', serif";
-            
-            // 座標変換関数
-            const tx = (x) => offsetX + x * scale;
-            const ty = (y) => offsetY + y * scale;
-            const ts = (size) => size * scale;
-            
-            // 月の数字（左側）
-            ctx.fillStyle = currentColors.primary;
-            ctx.font = `300 ${ts(180)}px ${fontFamily}`;
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'top';
-            ctx.fillText(currentMonth + 1, tx(75), ty(130));  // 100 -> 130 下に移動
-            
-            // 右側のヘッダー情報のベース位置 - 月の数字と天端を揃える
-            const rightBaseX = 825;
-            const rightBaseY = 130;  // 100 -> 130 月の数字と同じ高さに
-            
-            // 店舗名（素土）- 月数字と天端を揃える
-            ctx.fillStyle = currentColors.primary;
-            ctx.font = `400 ${ts(54)}px ${fontFamily}`;
-            ctx.textAlign = 'right';
-            ctx.textBaseline = 'top';
-            ctx.fillText(storeName, tx(rightBaseX), ty(rightBaseY));
-            
-            // 年（店舗名の下）
-            const verticalSpacing = 85;  // 素土と年の間（元の値）
-            ctx.fillStyle = hexToRgba(currentColors.primary, 0.7);
-            ctx.font = `300 ${ts(48)}px ${fontFamily}`;
-            ctx.textAlign = 'right';
-            ctx.textBaseline = 'top';
-            ctx.fillText(currentYear.toString(), tx(rightBaseX), ty(rightBaseY + verticalSpacing));
-            
-            // 凡例（年の下に配置）
-            let legendY = rightBaseY + verticalSpacing + 85;  // 年と凡例の間（元の値）
-            Object.keys(activeMarkers).forEach(key => {
-                if (activeMarkers[key].active) {
-                    const marker = activeMarkers[key];
-                    
-                    // テキストを先に描画（右寄せ）
-                    ctx.fillStyle = currentColors.primary;
-                    ctx.font = `400 ${ts(30)}px ${fontFamily}`;  // 26 -> 30 (凡例を大きく)
-                    ctx.textAlign = 'right';
-                    ctx.textBaseline = 'middle';
-                    
-                    // テキストの幅を測定
-                    const textWidth = ctx.measureText(marker.label).width;
-                    const textX = rightBaseX - 48;  // マーカー円の分のスペースを確保
-                    ctx.fillText(marker.label, tx(textX), ty(legendY));
-                    
-                    // 円をテキストの右側に描画
-                    ctx.fillStyle = marker.color;
-                    ctx.beginPath();
-                    ctx.arc(tx(rightBaseX - 17), ty(legendY), ts(17), 0, Math.PI * 2);  // 15 -> 17 (凡例の円も大きく)
-                    ctx.fill();
-                    
-                    legendY += 44;  // 38 -> 44 (凡例項目間の間隔を広げる)
-                }
-            });
-            
-            // 曜日ヘッダー
-            const dayHeaders = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-            ctx.fillStyle = hexToRgba(currentColors.primary, 0.8);
-            ctx.font = `400 ${ts(28)}px ${fontFamily}`;  // 23 -> 28
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            const cellWidth = 107;  // 94.3 -> 107
-            const cellHeight = 90;  // 行の高さを別に定義
-            const gridStartX = 75;  // 120 -> 75
-            const gridStartY = 440;  // カレンダーを上に上げる
-            
-            for (let i = 0; i < 7; i++) {
-                const x = gridStartX + (i * cellWidth) + cellWidth/2;
-                const y = gridStartY + 33.5;
-                ctx.fillText(dayHeaders[i], tx(x), ty(y));
-            }
-            
-            // カレンダーの日付
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
-            
-            let row = 0;
-            let col = 0;
-            
-            // 前月の日付
-            ctx.fillStyle = hexToRgba(currentColors.primary, 0.2);
-            ctx.font = `300 ${ts(44)}px ${fontFamily}`;  // 38 -> 44
-            
-            for (let i = firstDay - 1; i >= 0; i--) {
-                const x = gridStartX + (col * cellWidth) + cellWidth/2;
-                const y = gridStartY + 67 + (row * cellHeight) + cellHeight/2;  // 527 -> gridStartY + 67
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText((prevMonthDays - i).toString(), tx(x), ty(y));
-                col++;
-            }
-            
-            // 当月の日付
-            for (let date = 1; date <= daysInMonth; date++) {
-                if (col === 7) {
-                    col = 0;
-                    row++;
-                }
-                
-                const x = gridStartX + (col * cellWidth) + cellWidth/2;
-                const y = gridStartY + 67 + (row * cellHeight) + cellHeight/2;  // 527 -> gridStartY + 67
-                const dayKey = `${currentYear}-${currentMonth}-${date}`;
-                const markerType = markerData[dayKey];
-                
-                if (markerType && activeMarkers[markerType] && activeMarkers[markerType].active) {
-                    const marker = activeMarkers[markerType];
-                    // マーカーの背景
-                    ctx.fillStyle = marker.color;
-                    ctx.beginPath();
-                    ctx.arc(tx(x), ty(y), ts(40), 0, Math.PI * 2);  // マーカーのサイズを小さく調整
-                    ctx.fill();
-                    
-                    ctx.fillStyle = marker.textColor;
-                    ctx.font = `400 ${ts(44)}px ${fontFamily}`;  // 38 -> 44
-                } else {
-                    ctx.fillStyle = currentColors.primary;
-                    ctx.font = `300 ${ts(44)}px ${fontFamily}`;  // 38 -> 44
-                }
-                
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(date.toString(), tx(x), ty(y));
-                col++;
-            }
-            
-            // 来月の日付
-            ctx.fillStyle = hexToRgba(currentColors.primary, 0.2);
-            ctx.font = `300 ${ts(44)}px ${fontFamily}`;  // 38 -> 44
-            
-            let nextDate = 1;
-            const needsSixWeeks = (firstDay + daysInMonth) > 35;
-            const totalCells = needsSixWeeks ? 42 : 35;
-            const remainingCells = totalCells - (firstDay + daysInMonth);
-            
-            for (let i = 0; i < remainingCells; i++) {
-                if (col === 7) {
-                    col = 0;
-                    row++;
-                }
-                
-                const x = gridStartX + (col * cellWidth) + cellWidth/2;
-                const y = gridStartY + 67 + (row * cellHeight) + cellHeight/2;  // 527 -> gridStartY + 67
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(nextDate.toString(), tx(x), ty(y));
-                nextDate++;
-                col++;
-            }
-            
-            // フッター
-            const footerText = document.getElementById('footerText').value;
-            if (footerText) {
-                ctx.fillStyle = hexToRgba(currentColors.primary, 0.6);
-                ctx.font = `300 ${ts(30)}px ${fontFamily}`;  // 24 -> 30
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(footerText, targetWidth / 2, targetHeight - ts(60));
-            }
-        }
-
-        function generatePreview() {
-            const canvas = document.getElementById('previewCanvas');
-            drawInstagramCanvas(canvas, true);
-        }
-
-        function applyColors() {
-            const color = currentColors.primary;
-            
-            document.getElementById('monthNumber').style.color = color;
-            document.getElementById('monthTitle').style.color = color;
-            document.getElementById('yearDisplay').style.color = color;
-            document.getElementById('yearDisplay').style.opacity = '0.7';
-            
-            document.querySelectorAll('.legend-text').forEach(text => {
-                text.style.color = color;
-            });
-            
-            document.querySelectorAll('.day-header').forEach(header => {
-                header.style.color = color;
-            });
-            
-            document.querySelectorAll('.day:not(.other-month)').forEach(day => {
-                let hasMarker = false;
-                Object.keys(activeMarkers).forEach(key => {
-                    if (day.classList.contains(`marker-${key}`)) {
-                        hasMarker = true;
-                        day.style.color = '';
+                    if (!hasMarker) {
+                        day.style.color = color;
                     }
                 });
-                if (!hasMarker) {
-                    day.style.color = color;
-                }
-            });
-            
-            document.querySelectorAll('.day.other-month').forEach(day => {
-                day.style.color = hexToRgba(color, 0.2);
-            });
-
-            let styleSheet = document.getElementById('dynamic-styles');
-            if (!styleSheet) {
-                styleSheet = document.createElement('style');
-                styleSheet.id = 'dynamic-styles';
-                document.head.appendChild(styleSheet);
-            }
-            
-            let notMarkerSelectors = Object.keys(activeMarkers)
-                .filter(key => activeMarkers[key].active)
-                .map(key => `:not(.marker-${key})`)
-                .join('');
-            
-            styleSheet.innerHTML = `
-                .day:not(.other-month)${notMarkerSelectors}:hover {
-                    background: radial-gradient(circle at center, ${hexToRgba(color, 0.06)} 40px, transparent 40px) !important;
-                }
-            `;
-        }
-
-        function hexToRgba(hex, alpha) {
-            const r = parseInt(hex.slice(1, 3), 16);
-            const g = parseInt(hex.slice(3, 5), 16);
-            const b = parseInt(hex.slice(5, 7), 16);
-            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        }
-
-        function generateTextColor(bgColor) {
-            const r = parseInt(bgColor.slice(1, 3), 16);
-            const g = parseInt(bgColor.slice(3, 5), 16);
-            const b = parseInt(bgColor.slice(5, 7), 16);
-            
-            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-            
-            if (brightness > 128) {
-                const factor = 0.3;
-                return `#${Math.floor(r * factor).toString(16).padStart(2, '0')}${Math.floor(g * factor).toString(16).padStart(2, '0')}${Math.floor(b * factor).toString(16).padStart(2, '0')}`;
-            } else {
-                return '#ffffff';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            currentColors = generateColors('#000000');
-            
-            const optimalColors = generateOptimalMarkerColors(currentColors.primary);
-            
-            activeMarkers[1].color = optimalColors.marker1;
-            activeMarkers[1].textColor = currentColors.primary;
-            
-            activeMarkers[2] = {
-                label: '会議日',
-                color: optimalColors.marker2,
-                textColor: generateTextColor(optimalColors.marker2),
-                active: false
-            };
-            
-            activeMarkers[3] = {
-                label: 'イベント',
-                color: optimalColors.marker3,
-                textColor: generateTextColor(optimalColors.marker3),
-                active: false
-            };
-            
-            const yearSelect = document.getElementById('yearSelect');
-            for (let year = 2020; year <= 2035; year++) {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year + '年';
-                if (year === 2025) option.selected = true;
-                yearSelect.appendChild(option);
-            }
-
-            document.getElementById('settingsButton').addEventListener('click', function() {
-                const optimalColors = generateOptimalMarkerColors(currentColors.primary);
                 
-                activeMarkers[1].color = optimalColors.marker1;
-                activeMarkers[1].textColor = currentColors.primary;
-                
-                if (!activeMarkers[2]) {
-                    activeMarkers[2] = {
-                        label: '会議日',
-                        color: optimalColors.marker2,
-                        textColor: generateTextColor(optimalColors.marker2),
-                        active: false
-                    };
-                } else {
-                    activeMarkers[2].color = optimalColors.marker2;
-                    activeMarkers[2].textColor = generateTextColor(optimalColors.marker2);
-                }
-                
-                if (!activeMarkers[3]) {
-                    activeMarkers[3] = {
-                        label: 'イベント',
-                        color: optimalColors.marker3,
-                        textColor: generateTextColor(optimalColors.marker3),
-                        active: false
-                    };
-                } else {
-                    activeMarkers[3].color = optimalColors.marker3;
-                    activeMarkers[3].textColor = generateTextColor(optimalColors.marker3);
-                }
-                
-                document.getElementById('settingsModal').style.display = 'flex';
-                setupColorPicker();
-                generateMarkerSettings();
-            });
-
-            document.getElementById('addMarkerBtn').addEventListener('click', addMarker);
-
-            document.getElementById('instagramButton').addEventListener('click', function() {
-                document.getElementById('instagramModal').style.display = 'flex';
-                generatePreview();
-            });
-
-            document.querySelectorAll('.bg-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    document.querySelectorAll('.bg-option').forEach(o => o.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedBackground = this.dataset.bg;
-                    generatePreview();
+                document.querySelectorAll('.day.other-month').forEach(day => {
+                    day.style.color = Utils.hexToRgba(color, 0.2);
                 });
-            });
 
-            let footerTimeout;
-            document.getElementById('footerText').addEventListener('input', function() {
-                clearTimeout(footerTimeout);
-                footerTimeout = setTimeout(() => {
-                    generatePreview();
+                this.applyMarkerStyles();
+            }
+        };
+
+        // マーカーマネージャー
+        const MarkerManager = {
+            toggleMarker(element) {
+                if (element.classList.contains('other-month')) return;
+
+                element.classList.add('transitioning');
+                setTimeout(() => element.classList.remove('transitioning'), 300);
+
+                const year = element.dataset.year;
+                const month = element.dataset.month;
+                const date = element.dataset.date;
+                const dayKey = `${year}-${month}-${date}`;
+
+                const activeMarkerKeys = Object.keys(AppState.activeMarkers)
+                    .filter(key => AppState.activeMarkers[key].active)
+                    .map(Number);
+                
+                if (activeMarkerKeys.length === 0) return;
+
+                let currentMarker = AppState.markerData[dayKey] || 0;
+                
+                activeMarkerKeys.forEach(key => {
+                    element.classList.remove(`marker-${key}`);
+                });
+                
+                let nextMarkerIndex = activeMarkerKeys.findIndex(key => currentMarker < key);
+                
+                if (nextMarkerIndex === -1) {
+                    delete AppState.markerData[dayKey];
+                    element.style.color = AppState.currentColors.primary;
+                } else {
+                    const nextMarker = activeMarkerKeys[nextMarkerIndex];
+                    AppState.markerData[dayKey] = nextMarker;
+                    element.classList.add(`marker-${nextMarker}`);
+                    element.style.color = '';
+                }
+            },
+
+            addMarker() {
+                const activeCount = Object.values(AppState.activeMarkers).filter(m => m.active).length;
+                if (activeCount >= CONFIG.MAX_MARKERS) return;
+                
+                const nextKey = activeCount + 1;
+                const optimalColors = ColorManager.generateOptimalMarkerColors(AppState.currentColors.primary);
+                
+                const markerConfig = {
+                    2: { 
+                        label: 'イベント', 
+                        color: optimalColors.marker2 
+                    },
+                    3: { 
+                        label: '特別営業', 
+                        color: optimalColors.marker3 
+                    }
+                };
+                
+                if (markerConfig[nextKey]) {
+                    const config = markerConfig[nextKey];
+                    if (!AppState.activeMarkers[nextKey]) {
+                        AppState.activeMarkers[nextKey] = {
+                            label: config.label,
+                            color: config.color,
+                            textColor: Utils.generateTextColor(config.color),
+                            active: true
+                        };
+                    } else {
+                        AppState.activeMarkers[nextKey].color = config.color;
+                        AppState.activeMarkers[nextKey].textColor = Utils.generateTextColor(config.color);
+                        AppState.activeMarkers[nextKey].active = true;
+                    }
+                }
+                
+                UIManager.generateMarkerSettings();
+                StyleManager.applyMarkerStyles();
+            },
+
+            removeMarker(key) {
+                AppState.activeMarkers[key].active = false;
+                
+                Object.keys(AppState.markerData).forEach(dayKey => {
+                    if (AppState.markerData[dayKey] == key) {
+                        delete AppState.markerData[dayKey];
+                    }
+                });
+                
+                UIManager.generateMarkerSettings();
+                CalendarRenderer.generateCalendar();
+            }
+        };
+
+        // UIマネージャー
+        const UIManager = {
+            showModal(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.style.display = 'flex';
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        modal.classList.add('active');
+                    });
+                });
+                document.body.style.overflow = 'hidden';
+            },
+
+            hideModal(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = '';
                 }, 300);
-            });
+            },
 
-            document.getElementById('exportInstagram').addEventListener('click', function() {
+            generateMarkerSettings() {
+                const container = document.getElementById('markerSettingsContainer');
+                const fragment = document.createDocumentFragment();
+                
+                const header = document.createElement('div');
+                header.className = 'marker-settings-header';
+                
+                const title = document.createElement('div');
+                title.className = 'marker-settings-title';
+                title.textContent = 'テーマカラーを変更すると、マーカーの色も自動的に調整されます';
+                
+                header.appendChild(title);
+                fragment.appendChild(header);
+                
+                Object.keys(AppState.activeMarkers).forEach(key => {
+                    if (AppState.activeMarkers[key].active) {
+                        const markerItem = this.createMarkerItem(key, AppState.activeMarkers[key]);
+                        fragment.appendChild(markerItem);
+                    }
+                });
+                
+                container.innerHTML = '';
+                container.appendChild(fragment);
+                
+                this.updateAddMarkerButton();
+            },
+
+            createMarkerItem(key, marker) {
+                const markerItem = document.createElement('div');
+                markerItem.className = key === '1' ? 'marker-item' : 'marker-item removable';
+                
+                const preview = document.createElement('div');
+                preview.className = 'marker-preview';
+                preview.id = `marker${key}Preview`;
+                preview.style.backgroundColor = marker.color;
+                
+                const labelInput = document.createElement('input');
+                labelInput.type = 'text';
+                labelInput.className = 'marker-label-input';
+                labelInput.id = `marker${key}Label`;
+                labelInput.value = marker.label;
+                labelInput.placeholder = `マーカー${key}の名称`;
+                
+                const colorInput = document.createElement('input');
+                colorInput.type = 'color';
+                colorInput.className = 'marker-color-input';
+                colorInput.id = `marker${key}Color`;
+                colorInput.value = marker.color;
+                
+                colorInput.addEventListener('input', function() {
+                    preview.style.backgroundColor = this.value;
+                    AppState.activeMarkers[key].color = this.value;
+                    AppState.activeMarkers[key].textColor = key === '1' 
+                        ? AppState.currentColors.primary 
+                        : Utils.generateTextColor(this.value);
+                    StyleManager.applyMarkerStyles();
+                });
+                
+                markerItem.appendChild(preview);
+                markerItem.appendChild(labelInput);
+                markerItem.appendChild(colorInput);
+                
+                if (key !== '1') {
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-marker-btn';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.onclick = () => MarkerManager.removeMarker(key);
+                    markerItem.appendChild(removeBtn);
+                }
+                
+                return markerItem;
+            },
+
+            updateAddMarkerButton() {
+                const activeCount = Object.values(AppState.activeMarkers).filter(m => m.active).length;
+                const addBtn = document.getElementById('addMarkerBtn');
+                if (activeCount >= CONFIG.MAX_MARKERS) {
+                    addBtn.disabled = true;
+                    addBtn.textContent = 'マーカーは最大3つまで';
+                } else {
+                    addBtn.disabled = false;
+                    addBtn.textContent = '+ マーカーを追加';
+                }
+            },
+
+            initializeBackgroundOptions() {
+                const container = document.getElementById('backgroundOptions');
+                const fragment = document.createDocumentFragment();
+                
+                CONFIG.BACKGROUNDS.forEach((bg, index) => {
+                    const option = document.createElement('div');
+                    option.className = index === 0 ? 'bg-option selected' : 'bg-option';
+                    option.dataset.bg = bg.color;
+                    option.style.background = bg.color;
+                    if (bg.border) option.style.border = '1px solid #dee2e6';
+                    option.title = bg.name;
+                    option.addEventListener('click', EventHandlers.handleBackgroundSelect);
+                    fragment.appendChild(option);
+                });
+                
+                container.appendChild(fragment);
+            },
+
+            initializeSelects() {
+                const yearSelect = document.getElementById('yearSelect');
+                const monthSelect = document.getElementById('monthSelect');
+                const currentYear = new Date().getFullYear();
+                const currentMonth = new Date().getMonth();
+                
+                for (let year = CONFIG.MIN_YEAR; year <= CONFIG.MAX_YEAR; year++) {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year + '年';
+                    if (year === currentYear) option.selected = true;
+                    yearSelect.appendChild(option);
+                }
+                
+                CONFIG.MONTHS.forEach((month, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = month;
+                    if (index === currentMonth) option.selected = true;
+                    monthSelect.appendChild(option);
+                });
+            }
+        };
+
+        // Instagram エクスポート（省略 - 既存のコードと同じ）
+        const InstagramExporter = {
+            drawCanvas(canvas, isPreview = false) {
+                const ctx = canvas.getContext('2d');
+                
+                const targetWidth = isPreview ? 280 : 1080;
+                const targetHeight = isPreview ? 350 : 1350;
+                
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+                
+                ctx.fillStyle = AppState.selectedBackground;
+                ctx.fillRect(0, 0, targetWidth, targetHeight);
+                
+                const baseWidth = 900;
+                const baseHeight = 1125;
+                const scale = Math.min(targetWidth / baseWidth, targetHeight / baseHeight) * 0.9;
+                
+                const offsetX = (targetWidth - baseWidth * scale) / 2;
+                const offsetY = (targetHeight - baseHeight * scale) / 2;
+                
+                const fontFamily = "'游明朝', 'Yu Mincho', serif";
+                
+                const tx = (x) => offsetX + x * scale;
+                const ty = (y) => offsetY + y * scale;
+                const ts = (size) => size * scale;
+                
+                this.drawCalendarContent(ctx, tx, ty, ts, fontFamily, targetWidth, targetHeight);
+            },
+
+            drawCalendarContent(ctx, tx, ty, ts, fontFamily, targetWidth, targetHeight) {
+                // 月の数字
+                ctx.fillStyle = AppState.currentColors.primary;
+                ctx.font = `300 ${ts(180)}px ${fontFamily}`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(AppState.currentMonth + 1, tx(75), ty(130));
+                
+                // ヘッダー情報
+                const rightBaseX = 825;
+                const rightBaseY = 130;
+                
+                ctx.fillStyle = AppState.currentColors.primary;
+                ctx.font = `400 ${ts(54)}px ${fontFamily}`;
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'top';
+                ctx.fillText(CONFIG.STORE_NAME, tx(rightBaseX), ty(rightBaseY));
+                
+                const verticalSpacing = 85;
+                ctx.fillStyle = Utils.hexToRgba(AppState.currentColors.primary, 0.7);
+                ctx.font = `300 ${ts(48)}px ${fontFamily}`;
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'top';
+                ctx.fillText(AppState.currentYear.toString(), tx(rightBaseX), ty(rightBaseY + verticalSpacing));
+                
+                // 凡例
+                let legendY = rightBaseY + verticalSpacing + 85;
+                Object.keys(AppState.activeMarkers).forEach(key => {
+                    if (AppState.activeMarkers[key].active) {
+                        const marker = AppState.activeMarkers[key];
+                        
+                        ctx.fillStyle = AppState.currentColors.primary;
+                        ctx.font = `400 ${ts(30)}px ${fontFamily}`;
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'middle';
+                        
+                        const textX = rightBaseX - 48;
+                        ctx.fillText(marker.label, tx(textX), ty(legendY));
+                        
+                        ctx.fillStyle = marker.color;
+                        ctx.beginPath();
+                        ctx.arc(tx(rightBaseX - 17), ty(legendY), ts(17), 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        legendY += 44;
+                    }
+                });
+                
+                // カレンダーグリッド
+                this.drawCalendarGrid(ctx, tx, ty, ts, fontFamily);
+                
+                // フッター
+                const footerText = document.getElementById('footerText').value;
+                if (footerText) {
+                    ctx.fillStyle = Utils.hexToRgba(AppState.currentColors.primary, 0.6);
+                    ctx.font = `300 ${ts(30)}px ${fontFamily}`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(footerText, targetWidth / 2, targetHeight - ts(60));
+                }
+            },
+
+            drawCalendarGrid(ctx, tx, ty, ts, fontFamily) {
+                const cellWidth = 107;
+                const cellHeight = 90;
+                const gridStartX = 75;
+                const gridStartY = 440;
+                
+                // 曜日ヘッダー
+                ctx.fillStyle = Utils.hexToRgba(AppState.currentColors.primary, 0.8);
+                ctx.font = `400 ${ts(28)}px ${fontFamily}`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                CONFIG.DAY_HEADERS.forEach((header, i) => {
+                    const x = gridStartX + (i * cellWidth) + cellWidth/2;
+                    const y = gridStartY + 33.5;
+                    ctx.fillText(header, tx(x), ty(y));
+                });
+                
+                // 日付の描画
+                const daysInMonth = new Date(AppState.currentYear, AppState.currentMonth + 1, 0).getDate();
+                const firstDay = new Date(AppState.currentYear, AppState.currentMonth, 1).getDay();
+                const prevMonthDays = new Date(AppState.currentYear, AppState.currentMonth, 0).getDate();
+                
+                let row = 0;
+                let col = 0;
+                
+                // 前月
+                ctx.fillStyle = Utils.hexToRgba(AppState.currentColors.primary, 0.2);
+                ctx.font = `300 ${ts(44)}px ${fontFamily}`;
+                
+                for (let i = firstDay - 1; i >= 0; i--) {
+                    const x = gridStartX + (col * cellWidth) + cellWidth/2;
+                    const y = gridStartY + 67 + (row * cellHeight) + cellHeight/2;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText((prevMonthDays - i).toString(), tx(x), ty(y));
+                    col++;
+                }
+                
+                // 当月
+                for (let date = 1; date <= daysInMonth; date++) {
+                    if (col === 7) {
+                        col = 0;
+                        row++;
+                    }
+                    
+                    const x = gridStartX + (col * cellWidth) + cellWidth/2;
+                    const y = gridStartY + 67 + (row * cellHeight) + cellHeight/2;
+                    const dayKey = `${AppState.currentYear}-${AppState.currentMonth}-${date}`;
+                    const markerType = AppState.markerData[dayKey];
+                    
+                    if (markerType && AppState.activeMarkers[markerType] && AppState.activeMarkers[markerType].active) {
+                        const marker = AppState.activeMarkers[markerType];
+                        ctx.fillStyle = marker.color;
+                        ctx.beginPath();
+                        ctx.arc(tx(x), ty(y), ts(40), 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        ctx.fillStyle = marker.textColor;
+                        const fontWeight = markerType === '1' ? '400' : markerType === '2' ? '500' : '600';
+                        ctx.font = `${fontWeight} ${ts(44)}px ${fontFamily}`;
+                    } else {
+                        ctx.fillStyle = AppState.currentColors.primary;
+                        ctx.font = `300 ${ts(44)}px ${fontFamily}`;
+                    }
+                    
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(date.toString(), tx(x), ty(y));
+                    col++;
+                }
+                
+                // 来月
+                ctx.fillStyle = Utils.hexToRgba(AppState.currentColors.primary, 0.2);
+                ctx.font = `300 ${ts(44)}px ${fontFamily}`;
+                
+                let nextDate = 1;
+                const needsSixWeeks = (firstDay + daysInMonth) > 35;
+                const totalCells = needsSixWeeks ? 42 : 35;
+                const remainingCells = totalCells - (firstDay + daysInMonth);
+                
+                for (let i = 0; i < remainingCells; i++) {
+                    if (col === 7) {
+                        col = 0;
+                        row++;
+                    }
+                    
+                    const x = gridStartX + (col * cellWidth) + cellWidth/2;
+                    const y = gridStartY + 67 + (row * cellHeight) + cellHeight/2;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(nextDate.toString(), tx(x), ty(y));
+                    nextDate++;
+                    col++;
+                }
+            },
+
+            generatePreview() {
+                const canvas = document.getElementById('previewCanvas');
+                this.drawCanvas(canvas, true);
+            },
+
+            exportImage() {
                 const canvas = document.createElement('canvas');
-                drawInstagramCanvas(canvas, false);
+                this.drawCanvas(canvas, false);
                 
                 const dataUrl = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
-                link.download = `calendar_${currentYear}_${String(currentMonth + 1).padStart(2, '0')}_instagram.png`;
+                link.download = `calendar_${AppState.currentYear}_${String(AppState.currentMonth + 1).padStart(2, '0')}_instagram.png`;
                 link.href = dataUrl;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-            });
+            }
+        };
 
-            document.getElementById('cancelButton').addEventListener('click', function() {
-                document.getElementById('settingsModal').style.display = 'none';
-            });
+        // イベントハンドラー
+        const EventHandlers = {
+            handleDayClick(e) {
+                e.preventDefault();
+                MarkerManager.toggleMarker(this);
+            },
 
-            document.getElementById('cancelInstagram').addEventListener('click', function() {
-                document.getElementById('instagramModal').style.display = 'none';
-            });
-
-            document.getElementById('applyButton').addEventListener('click', function() {
-                const newYear = parseInt(document.getElementById('yearSelect').value);
-                const newMonth = parseInt(document.getElementById('monthSelect').value);
-                
-                if (newYear !== currentYear || newMonth !== currentMonth) {
-                    currentYear = newYear;
-                    currentMonth = newMonth;
+            navigateToPrevMonth() {
+                AppState.currentMonth--;
+                if (AppState.currentMonth < 0) {
+                    AppState.currentMonth = 11;
+                    AppState.currentYear--;
                 }
+                CalendarRenderer.generateCalendar();
+                StyleManager.applyColors();
+            },
 
+            navigateToNextMonth() {
+                AppState.currentMonth++;
+                if (AppState.currentMonth > 11) {
+                    AppState.currentMonth = 0;
+                    AppState.currentYear++;
+                }
+                CalendarRenderer.generateCalendar();
+                StyleManager.applyColors();
+            },
+
+            handleBackgroundSelect(e) {
+                e.preventDefault();
+                document.querySelectorAll('.bg-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                AppState.selectedBackground = this.dataset.bg;
+                InstagramExporter.generatePreview();
+            },
+
+            handleSettingsOpen() {
+                const optimalColors = ColorManager.generateOptimalMarkerColors(AppState.currentColors.primary);
+                
+                AppState.activeMarkers[1].color = optimalColors.marker1;
+                AppState.activeMarkers[1].textColor = AppState.currentColors.primary;
+                
+                [2, 3].forEach(key => {
+                    const colors = key === 2 ? optimalColors.marker2 : optimalColors.marker3;
+                    const label = key === 2 ? 'イベント' : '特別営業';
+                    
+                    if (!AppState.activeMarkers[key]) {
+                        AppState.activeMarkers[key] = {
+                            label: label,
+                            color: colors,
+                            textColor: Utils.generateTextColor(colors),
+                            active: false
+                        };
+                    } else {
+                        AppState.activeMarkers[key].color = colors;
+                        AppState.activeMarkers[key].textColor = Utils.generateTextColor(colors);
+                    }
+                });
+                
+                UIManager.showModal('settingsModal');
+                EventHandlers.setupColorPicker();
+                UIManager.generateMarkerSettings();
+            },
+
+            handleSettingsApply() {
                 const newColor = document.getElementById('baseColorInput').value;
                 let themeColorChanged = false;
-                if (newColor !== currentColors.primary) {
-                    currentColors = generateColors(newColor);
+                
+                if (newColor !== AppState.currentColors.primary) {
+                    AppState.currentColors = ColorManager.generateColors(newColor);
                     themeColorChanged = true;
-                    updatePreview();
+                    EventHandlers.updatePreview();
                     
-                    const optimalColors = generateOptimalMarkerColors(newColor);
+                    const optimalColors = ColorManager.generateOptimalMarkerColors(newColor);
                     
-                    activeMarkers[1].color = optimalColors.marker1;
-                    activeMarkers[1].textColor = newColor;
+                    AppState.activeMarkers[1].color = optimalColors.marker1;
+                    AppState.activeMarkers[1].textColor = newColor;
                     
-                    if (activeMarkers[2]) {
-                        activeMarkers[2].color = optimalColors.marker2;
-                        activeMarkers[2].textColor = generateTextColor(optimalColors.marker2);
+                    if (AppState.activeMarkers[2]) {
+                        AppState.activeMarkers[2].color = optimalColors.marker2;
+                        AppState.activeMarkers[2].textColor = Utils.generateTextColor(optimalColors.marker2);
                     }
                     
-                    if (activeMarkers[3]) {
-                        activeMarkers[3].color = optimalColors.marker3;
-                        activeMarkers[3].textColor = generateTextColor(optimalColors.marker3);
+                    if (AppState.activeMarkers[3]) {
+                        AppState.activeMarkers[3].color = optimalColors.marker3;
+                        AppState.activeMarkers[3].textColor = Utils.generateTextColor(optimalColors.marker3);
                     }
                 }
                 
-                if (!themeColorChanged) {
-                    Object.keys(activeMarkers).forEach(key => {
-                        if (activeMarkers[key].active) {
-                            const labelInput = document.getElementById(`marker${key}Label`);
+                Object.keys(AppState.activeMarkers).forEach(key => {
+                    if (AppState.activeMarkers[key].active) {
+                        const labelInput = document.getElementById(`marker${key}Label`);
+                        if (labelInput) {
+                            AppState.activeMarkers[key].label = labelInput.value || `マーカー${key}`;
+                        }
+                        
+                        if (!themeColorChanged) {
                             const colorInput = document.getElementById(`marker${key}Color`);
-                            
-                            if (labelInput) {
-                                activeMarkers[key].label = labelInput.value || `マーカー${key}`;
-                            }
                             if (colorInput) {
-                                activeMarkers[key].color = colorInput.value;
-                                if (key === '1') {
-                                    activeMarkers[key].textColor = currentColors.primary;
-                                } else {
-                                    activeMarkers[key].textColor = generateTextColor(colorInput.value);
-                                }
+                                AppState.activeMarkers[key].color = colorInput.value;
+                                AppState.activeMarkers[key].textColor = key === '1' 
+                                    ? AppState.currentColors.primary 
+                                    : Utils.generateTextColor(colorInput.value);
                             }
                         }
-                    });
-                } else {
-                    Object.keys(activeMarkers).forEach(key => {
-                        if (activeMarkers[key].active) {
-                            const labelInput = document.getElementById(`marker${key}Label`);
-                            if (labelInput) {
-                                activeMarkers[key].label = labelInput.value || `マーカー${key}`;
-                            }
-                        }
-                    });
-                }
+                    }
+                });
                 
-                generateCalendar();
-                applyColors();
+                CalendarRenderer.generateCalendar();
+                StyleManager.applyColors();
+                UIManager.hideModal('settingsModal');
+            },
 
-                document.getElementById('settingsModal').style.display = 'none';
-            });
+            setupColorPicker() {
+                const colorInput = document.getElementById('baseColorInput');
+                if (!colorInput) return;
 
-            generateCalendar();
-            applyColors();
-            
-            document.getElementById('monthNumber').style.color = currentColors.primary;
-            document.getElementById('monthTitle').style.color = currentColors.primary;
-            document.getElementById('yearDisplay').style.color = currentColors.primary;
-        });
+                colorInput.value = AppState.currentColors.primary;
+                
+                const optimalColors = ColorManager.generateOptimalMarkerColors(AppState.currentColors.primary);
+                AppState.activeMarkers[1].color = optimalColors.marker1;
+                AppState.activeMarkers[1].textColor = AppState.currentColors.primary;
+                
+                EventHandlers.updatePreview();
 
-        function setupColorPicker() {
-            const colorInput = document.getElementById('baseColorInput');
-            if (!colorInput) return;
+                const newColorInput = colorInput.cloneNode(true);
+                colorInput.parentNode.replaceChild(newColorInput, colorInput);
+                newColorInput.addEventListener('input', EventHandlers.handleColorInput);
+            },
 
-            colorInput.value = currentColors.primary;
-            
-            const optimalColors = generateOptimalMarkerColors(currentColors.primary);
-            activeMarkers[1].color = optimalColors.marker1;
-            activeMarkers[1].textColor = currentColors.primary;
-            
-            updatePreview();
-
-            colorInput.addEventListener('input', function() {
-                const newColors = generateColors(this.value);
-                const optimalColors = generateOptimalMarkerColors(this.value);
+            handleColorInput() {
+                const newColors = ColorManager.generateColors(this.value);
+                const optimalColors = ColorManager.generateOptimalMarkerColors(this.value);
                 
                 document.getElementById('previewPrimary').style.backgroundColor = newColors.primary;
                 document.getElementById('previewAccent').style.backgroundColor = optimalColors.marker1;
                 document.getElementById('previewDark').style.backgroundColor = newColors.hover;
                 
-                activeMarkers[1].color = optimalColors.marker1;
-                activeMarkers[1].textColor = this.value;
+                AppState.activeMarkers[1].color = optimalColors.marker1;
+                AppState.activeMarkers[1].textColor = this.value;
                 
-                if (activeMarkers[2]) {
-                    activeMarkers[2].color = optimalColors.marker2;
-                    activeMarkers[2].textColor = generateTextColor(optimalColors.marker2);
-                } else {
-                    activeMarkers[2] = {
-                        label: '会議日',
-                        color: optimalColors.marker2,
-                        textColor: generateTextColor(optimalColors.marker2),
-                        active: false
-                    };
+                [2, 3].forEach(key => {
+                    const colors = key === 2 ? optimalColors.marker2 : optimalColors.marker3;
+                    const label = key === 2 ? 'イベント' : '特別営業';
+                    
+                    if (!AppState.activeMarkers[key]) {
+                        AppState.activeMarkers[key] = {
+                            label: label,
+                            color: colors,
+                            textColor: Utils.generateTextColor(colors),
+                            active: false
+                        };
+                    } else {
+                        AppState.activeMarkers[key].color = colors;
+                        AppState.activeMarkers[key].textColor = Utils.generateTextColor(colors);
+                    }
+                });
+                
+                Object.keys(AppState.activeMarkers).forEach(key => {
+                    if (AppState.activeMarkers[key].active) {
+                        const colorInput = document.getElementById(`marker${key}Color`);
+                        const previewEl = document.getElementById(`marker${key}Preview`);
+                        if (colorInput && previewEl) {
+                            const marker = AppState.activeMarkers[key];
+                            colorInput.value = marker.color;
+                            previewEl.style.backgroundColor = marker.color;
+                        }
+                    }
+                });
+                
+                StyleManager.applyMarkerStyles();
+            },
+
+            updatePreview() {
+                const optimalColors = ColorManager.generateOptimalMarkerColors(AppState.currentColors.primary);
+                document.getElementById('previewPrimary').style.backgroundColor = AppState.currentColors.primary;
+                document.getElementById('previewAccent').style.backgroundColor = optimalColors.marker1;
+                document.getElementById('previewDark').style.backgroundColor = AppState.currentColors.hover;
+            }
+        };
+
+        // 初期化
+        function initialize() {
+            // モバイルでのダブルタップズームを防ぐ
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', (e) => {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
                 }
+                lastTouchEnd = now;
+            }, { passive: false });
+
+            // スワイプ操作の実装
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            const calendarContainer = document.querySelector('.calendar-container');
+            
+            calendarContainer.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+            
+            calendarContainer.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const diff = touchStartX - touchEndX;
                 
-                if (activeMarkers[3]) {
-                    activeMarkers[3].color = optimalColors.marker3;
-                    activeMarkers[3].textColor = generateTextColor(optimalColors.marker3);
-                } else {
-                    activeMarkers[3] = {
-                        label: 'イベント',
-                        color: optimalColors.marker3,
-                        textColor: generateTextColor(optimalColors.marker3),
-                        active: false
-                    };
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        EventHandlers.navigateToNextMonth();
+                    } else {
+                        EventHandlers.navigateToPrevMonth();
+                    }
                 }
-                
-                const marker1Color = document.getElementById('marker1Color');
-                const marker1Preview = document.getElementById('marker1Preview');
-                if (marker1Color && marker1Preview) {
-                    marker1Color.value = optimalColors.marker1;
-                    marker1Preview.style.backgroundColor = optimalColors.marker1;
-                }
-                
-                const marker2Color = document.getElementById('marker2Color');
-                const marker2Preview = document.getElementById('marker2Preview');
-                if (marker2Color && marker2Preview && activeMarkers[2].active) {
-                    marker2Color.value = optimalColors.marker2;
-                    marker2Preview.style.backgroundColor = optimalColors.marker2;
-                }
-                
-                const marker3Color = document.getElementById('marker3Color');
-                const marker3Preview = document.getElementById('marker3Preview');
-                if (marker3Color && marker3Preview && activeMarkers[3].active) {
-                    marker3Color.value = optimalColors.marker3;
-                    marker3Preview.style.backgroundColor = optimalColors.marker3;
-                }
-                
-                applyMarkerStyles();
+            }
+
+            // 初期カラー設定
+            AppState.currentColors = ColorManager.generateColors('#000000');
+            const optimalColors = ColorManager.generateOptimalMarkerColors(AppState.currentColors.primary);
+            
+            AppState.activeMarkers[1].color = optimalColors.marker1;
+            AppState.activeMarkers[1].textColor = AppState.currentColors.primary;
+            
+            AppState.activeMarkers[2] = {
+                label: 'イベント',
+                color: optimalColors.marker2,
+                textColor: Utils.generateTextColor(optimalColors.marker2),
+                active: false
+            };
+            
+            AppState.activeMarkers[3] = {
+                label: '特別営業',
+                color: optimalColors.marker3,
+                textColor: Utils.generateTextColor(optimalColors.marker3),
+                active: false
+            };
+
+            // UI初期化
+            UIManager.initializeBackgroundOptions();
+            
+            // ナビゲーションボタンのイベントリスナー
+            document.getElementById('prevMonth').addEventListener('click', EventHandlers.navigateToPrevMonth);
+            document.getElementById('nextMonth').addEventListener('click', EventHandlers.navigateToNextMonth);
+            
+            // イベントリスナー設定
+            document.getElementById('settingsButton').addEventListener('click', EventHandlers.handleSettingsOpen);
+            document.getElementById('addMarkerBtn').addEventListener('click', () => MarkerManager.addMarker());
+            document.getElementById('instagramButton').addEventListener('click', () => {
+                UIManager.showModal('instagramModal');
+                InstagramExporter.generatePreview();
             });
+
+            // フッターテキスト入力のデバウンス処理
+            const footerInput = document.getElementById('footerText');
+            const debouncedPreview = Utils.debounce(() => InstagramExporter.generatePreview(), 300);
+            footerInput.addEventListener('input', debouncedPreview);
+
+            // モーダルボタンのイベント委譲
+            document.addEventListener('click', (e) => {
+                const action = e.target.dataset.action;
+                if (!action) return;
+                
+                const actions = {
+                    'cancel': () => UIManager.hideModal('settingsModal'),
+                    'apply': EventHandlers.handleSettingsApply,
+                    'cancel-instagram': () => UIManager.hideModal('instagramModal'),
+                    'export': () => InstagramExporter.exportImage()
+                };
+                
+                if (actions[action]) {
+                    e.preventDefault();
+                    actions[action]();
+                }
+            });
+
+            // モーダル外クリックで閉じる
+            ['settingsModal', 'instagramModal'].forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        UIManager.hideModal(modalId);
+                    }
+                });
+            });
+
+            // ウィンドウリサイズ時の処理
+            const debouncedResize = Utils.debounce(() => {
+                StyleManager.applyMarkerStyles();
+            }, 250);
+            window.addEventListener('resize', debouncedResize);
+            
+            // Orientation変更時の処理（モバイル）
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    StyleManager.applyMarkerStyles();
+                    CalendarRenderer.generateCalendar();
+                }, 300);
+            });
+
+            // カレンダー初期表示
+            CalendarRenderer.generateCalendar();
+            StyleManager.applyColors();
         }
 
-        function rgbToHex(rgb) {
-            if (rgb.startsWith('#')) return rgb;
-            
-            const matches = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-            if (!matches) return '#000000';
-            
-            const r = parseInt(matches[1]);
-            const g = parseInt(matches[2]);
-            const b = parseInt(matches[3]);
-            
-            return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        // DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initialize);
+        } else {
+            initialize();
         }
-
-        function updatePreview() {
-            const optimalColors = generateOptimalMarkerColors(currentColors.primary);
-            document.getElementById('previewPrimary').style.backgroundColor = currentColors.primary;
-            document.getElementById('previewAccent').style.backgroundColor = optimalColors.marker1;
-            document.getElementById('previewDark').style.backgroundColor = currentColors.hover;
-        }
-
-        document.addEventListener('click', function(e) {
-            if (e.target === document.getElementById('settingsModal')) {
-                document.getElementById('settingsModal').style.display = 'none';
-            }
-            if (e.target === document.getElementById('instagramModal')) {
-                document.getElementById('instagramModal').style.display = 'none';
-            }
-        });
     </script>
 </body>
 </html>
