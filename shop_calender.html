@@ -640,7 +640,7 @@
         .month-number {
             position: absolute;
             left: 8.33%;
-            top: 8.89%;
+            top: 16%;  /* 素土の下端に合わせて調整 */
             font-size: 14vw;  /* 20vw → 14vw (70%) */
             font-weight: 300;
             line-height: 1;
@@ -655,7 +655,7 @@
         @media (max-width: 768px) {
             .month-number {
                 font-size: 14vw;  /* 20vw → 14vw (70%) */
-                top: 5%;
+                top: 12%;  /* モバイルでも素土の下端に合わせる */
                 left: 6%;
             }
         }
@@ -1739,12 +1739,12 @@
             },
 
             drawCalendarContent(ctx, tx, ty, ts, fontFamily, targetWidth, targetHeight) {
-                // 月の数字 - サイズを70%に縮小
+                // 月の数字 - サイズを70%に縮小、位置を素土の下端に調整
                 ctx.fillStyle = AppState.currentColors.primary;
                 ctx.font = `300 ${ts(126)}px ${fontFamily}`;  // 180 → 126 (70%)
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'top';
-                ctx.fillText(AppState.currentMonth + 1, tx(75), ty(130));
+                ctx.fillText(AppState.currentMonth + 1, tx(75), ty(200));  // 130 → 200 素土の下端に合わせる
                 
                 // ヘッダー情報
                 const rightBaseX = 825;
